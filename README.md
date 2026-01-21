@@ -97,6 +97,26 @@ Access the application at `http://127.0.0.1:5000` in your browser.
 
 ---
 
+## 🖼️ Screenshots
+
+<div align="center">
+
+### Dashboard Interface
+
+<img src="assets/screenshot-1.png" alt="Dashboard Interface" width="700"/>
+
+### Enter Stock Symbol
+
+<img src="assets/screenshot-2.png" alt="Model Loading" width="700"/>
+
+### Prediction
+
+<img src="assets/screenshot-3.png" alt="Analysis Results" width="700"/>
+
+</div>
+
+---
+
 ## 🌍 How to Enter Stock Symbols
 
 This application supports global markets via Yahoo Finance tickers. Use the correct suffix for your target market:
