@@ -1,23 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Live Stock Prediction</title>
+    <title>Stock Prediction Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
-<canvas id="priceChart" width="600" height="300"></canvas>
-
 <body>
-    <h1>Stock Price Prediction (Live)</h1>
 
-    <input id="symbol" placeholder="Enter symbol (AAPL, TSLA, TCS.NS)">
-    <br><br>
-    <button onclick="getPrediction()">Predict</button>
+<div class="dashboard-card">
+    <h1>📈 Stock Prediction Dashboard</h1>
 
-    <p id="lr"></p>
-    <p id="lstm"></p>
+    <div class="controls">
+        <input id="symbol" placeholder="Enter symbol (AAPL, TCS.NS, TSLA)">
+        <button onclick="getPrediction()">Predict</button>
+    </div>
 
-    <script src="/static/script.js"></script>
+    <div class="predictions">
+        <div class="prediction-box">
+            <span class="label">Linear Regression</span>
+            <span id="lr" class="value">—</span>
+        </div>
+        <div class="prediction-box">
+            <span class="label">LSTM</span>
+            <span id="lstm" class="value">—</span>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="priceChart"></canvas>
+    </div>
+</div>
+
+<script src="/static/script.js"></script>
 </body>
 </html>

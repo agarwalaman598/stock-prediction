@@ -16,11 +16,9 @@ function getPrediction() {
                 return;
             }
 
-            document.getElementById("lr").innerText =
-                "Linear Regression Prediction: ₹ " + data.linear_prediction;
+            document.getElementById("lr").innerText = "₹ " + data.linear_prediction;
 
-            document.getElementById("lstm").innerText =
-                "LSTM Prediction: ₹ " + data.lstm_prediction;
+            document.getElementById("lstm").innerText = "₹ " + data.lstm_prediction;
 
             drawChart(data.history, data.dates, data.linear_prediction, data.symbol);
         })
