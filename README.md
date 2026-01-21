@@ -15,7 +15,7 @@ A robust machine learning application designed to forecast next-day stock closin
 - **Real-Time Data Ingestion**: Seamless integration with Yahoo Finance (`yfinance`) for up-to-the-minute market data.
 - **Dual-Model Inference**: Simultaneous execution of statistical (Linear Regression) and deep learning (LSTM) models for comparative analysis.
 - **Global Market Support**: Full compatibility with international tickers (e.g., NSE, BSE, LSE, NASDAQ).
-- **Interactive Web Interface**: A minimal, responsive frontend for instant query and visualization.
+- **Interactive Web Interface**: A minimal, responsive frontend with line-chart visualization of historical prices and predicted next-day close.
 - **Automated Preprocessing**: On-the-fly data cleaning, normalization, and sequence generation.
 
 ---
@@ -42,6 +42,25 @@ stock-prediction/
 ```
 
 ---
+
+## 🏗️ System Architecture
+```text
+User
+ ↓
+Web UI (HTML / CSS / JavaScript)
+ ↓
+Flask Backend (REST API)
+ ↓
+Yahoo Finance (Live Market Data)
+ ↓
+ML Models (Linear Regression + LSTM)
+ ↓
+Prediction + Visualization (Chart.js)
+
+```
+---
+
+
 
 ## 🛠️ Installation & Setup
 
@@ -71,7 +90,7 @@ pip install -r requirements.txt
 
 ## 🧠 Model Training
 
-Before running the application, train the models to generate the necessary `.h5` and `.pkl` files.
+Before running the application, train the models to generate the necessary `.keras` and `.pkl` model files.
 
 ```bash
 # Train Linear Regression Model
@@ -150,6 +169,34 @@ This application supports global markets via Yahoo Finance tickers. Use the corr
 - **Type**: Recurrent Neural Network (RNN).
 - **Use Case**: Captures complex, non-linear temporal dependencies in time-series data.
 - **Pros**: Handles sequential data effectively, learns long-term patterns.
+
+---
+
+## 📈 Model Evaluation
+
+Both models are evaluated using standard regression error metrics on a held-out test set:
+
+- **MAE (Mean Absolute Error)** — Average absolute prediction error
+- **RMSE (Root Mean Square Error)** — Penalizes larger errors more strongly
+
+Run evaluation:
+```bash
+python backend/evaluate_models.py
+```
+### Sample Output
+
+```text
+Linear Regression:
+MAE  : 2.4
+RMSE : 3.47
+
+LSTM:
+MAE  : 6.04
+RMSE : 7.88
+```
+
+> Note: Values vary depending on the dataset, training window, and market conditions.
+
 
 ---
 
