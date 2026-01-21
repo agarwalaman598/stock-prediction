@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Project Data (Local cache)
+data/
+*.csv
+
+# Trained Models
+*.h5
+*.pkl
+backend/saved_models/
+
+
+# Logs
+*.log
