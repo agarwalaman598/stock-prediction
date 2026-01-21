@@ -18,10 +18,9 @@ def home():
 
 
 @app.route("/predict/<symbol>")
-@app.route("/predict/<symbol>")
 def predict_symbol(symbol):
     try:
-        # Download data
+        # Download stock data
         data = yf.download(symbol, period="3mo", progress=False)
 
         if data is None or data.empty:
@@ -66,18 +65,26 @@ def predict_symbol(symbol):
         lr_price = (lr_scaled * (max_price - min_price)) + min_price
         lstm_price = (lstm_scaled * (max_price - min_price)) + min_price
 
+        # Get stock currency (after validation)
+        try:
+            ticker = yf.Ticker(symbol)
+            info = ticker.info
+            currency = info.get("currency", "USD")
+        except:
+            currency = "USD"
+
         return jsonify({
             "symbol": symbol.upper(),
+            "currency": currency,
             "linear_prediction": round(lr_price, 2),
             "lstm_prediction": round(lstm_price, 2),
             "history": close_series[-60:].round(2).tolist(),
             "dates": data.index[-60:].strftime("%Y-%m-%d").tolist()
         })
 
-
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)
