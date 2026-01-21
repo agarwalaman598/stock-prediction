@@ -70,8 +70,10 @@ def predict_symbol(symbol):
             "symbol": symbol.upper(),
             "linear_prediction": round(lr_price, 2),
             "lstm_prediction": round(lstm_price, 2),
-            "history": close_series[-60:].round(2).tolist()
+            "history": close_series[-60:].round(2).tolist(),
+            "dates": data.index[-60:].strftime("%Y-%m-%d").tolist()
         })
+
 
 
     except Exception as e:

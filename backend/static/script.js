@@ -22,7 +22,7 @@ function getPrediction() {
             document.getElementById("lstm").innerText =
                 "LSTM Prediction: ₹ " + data.lstm_prediction;
 
-            drawChart(data.history, data.linear_prediction, data.symbol);
+            drawChart(data.history, data.dates, data.linear_prediction, data.symbol);
         })
         .catch(err => {
             alert("Error fetching prediction");
@@ -30,14 +30,8 @@ function getPrediction() {
         });
 }
 
-function drawChart(history, prediction, symbol) {
-    const labels = [];
-
-    for (let i = 1; i <= history.length; i++) {
-        labels.push("Day " + i);
-    }
-    labels.push("Predicted");
-
+function drawChart(history, dates, prediction, symbol) {
+    const labels = [...dates, "Predicted"];
     const prices = [...history, prediction];
 
     const ctx = document.getElementById("priceChart").getContext("2d");
@@ -51,11 +45,14 @@ function drawChart(history, prediction, symbol) {
         data: {
             labels: labels,
             datasets: [{
-                label: symbol + " Price Trend",
+                label: symbol + " Closing Price Trend",
                 data: prices,
                 borderWidth: 2,
                 fill: false,
-                tension: 0.3
+                tension: 0.3,
+                pointRadius: function(ctx) {
+                    return ctx.dataIndex === prices.length - 1 ? 6 : 3;
+                }
             }]
         },
         options: {
@@ -66,16 +63,16 @@ function drawChart(history, prediction, symbol) {
                 }
             },
             scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Date"
+                    }
+                },
                 y: {
                     title: {
                         display: true,
                         text: "Price"
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: "Time"
                     }
                 }
             }
