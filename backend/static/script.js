@@ -1,3 +1,5 @@
+let chart = null;
+
 function getPrediction() {
     const symbol = document.getElementById("symbol").value.trim();
 
@@ -19,9 +21,64 @@ function getPrediction() {
 
             document.getElementById("lstm").innerText =
                 "LSTM Prediction: ₹ " + data.lstm_prediction;
+
+            drawChart(data.history, data.linear_prediction, data.symbol);
         })
         .catch(err => {
             alert("Error fetching prediction");
             console.log(err);
         });
+}
+
+function drawChart(history, prediction, symbol) {
+    const labels = [];
+
+    for (let i = 1; i <= history.length; i++) {
+        labels.push("Day " + i);
+    }
+    labels.push("Predicted");
+
+    const prices = [...history, prediction];
+
+    const ctx = document.getElementById("priceChart").getContext("2d");
+
+    if (chart) {
+        chart.destroy();
+    }
+
+    chart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: symbol + " Price Trend",
+                data: prices,
+                borderWidth: 2,
+                fill: false,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: "Price"
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: "Time"
+                    }
+                }
+            }
+        }
+    });
 }

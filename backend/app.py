@@ -69,8 +69,10 @@ def predict_symbol(symbol):
         return jsonify({
             "symbol": symbol.upper(),
             "linear_prediction": round(lr_price, 2),
-            "lstm_prediction": round(lstm_price, 2)
+            "lstm_prediction": round(lstm_price, 2),
+            "history": close_series[-60:].round(2).tolist()
         })
+
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
