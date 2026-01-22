@@ -62,8 +62,12 @@ async function getPrediction() {
         } else {
             // Update Text
             document.getElementById("stockTitle").innerText = `${data.symbol} Prediction`;
-            document.getElementById("lrValue").innerText = `${data.currency} ${data.linear_prediction}`;
-            document.getElementById("lstmValue").innerText = `${data.currency} ${data.lstm_prediction}`;
+            
+            // Format numbers with commas (e.g., 1,23,456.78)
+            const fmt = (num) => Number(num).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            document.getElementById("lrValue").innerText = `${data.currency} ${fmt(data.linear_prediction)}`;
+            document.getElementById("lstmValue").innerText = `${data.currency} ${fmt(data.lstm_prediction)}`;
             
             // Render Chart
             renderChart(data.dates, data.history, data.linear_prediction, data.lstm_prediction);
