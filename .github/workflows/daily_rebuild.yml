@@ -24,18 +24,24 @@ jobs:
           git config --global user.name "GitHub Actions Bot"
           
           # 1. Create a fresh, empty branch for deployment
-          # This wipes the history so Hugging Face doesn't complain about old large files
           git checkout --orphan deploy_branch
           
-          # 2. DELETE the assets folder (screenshots) from this deployment branch
-          # This keeps them on GitHub, but stops them from going to Hugging Face
+          # 2. DELETE assets (screenshots) to avoid large file errors
           rm -rf assets
           git rm -rf assets --ignore-unmatch
+
+          # --- MAGIC TRICK STARTS HERE ---
+          # 3. Inject the Hugging Face Configuration into README.md
+          # This adds the YAML block to the top of the file dynamically
+          sed -i '1s/^/---\ntitle: Stock Prediction Live\nemoji: 📈\ncolorFrom: blue\ncolorTo: green\nsdk: docker\napp_port: 7860\npinned: false\n---\n\n/' README.md
           
-          # 3. Commit the clean code
+          # Add the modified README to git
+          git add README.md
+          # --- MAGIC TRICK ENDS HERE ---
+          
+          # 4. Commit the clean code
           git add .
-          git commit -m "Deploy to Hugging Face (Clean Build)"
+          git commit -m "Deploy to Hugging Face (Clean Build + Config)"
           
-          # 4. Push this clean branch to Hugging Face's 'main' branch
-          # We force push to overwrite whatever is there
+          # 5. Push to Hugging Face
           git push --force https://agarwalaman:$HF_TOKEN@huggingface.co/spaces/agarwalaman/stock-prediction-live deploy_branch:main
