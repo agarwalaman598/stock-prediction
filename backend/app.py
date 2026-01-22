@@ -1,3 +1,4 @@
+import os
 import requests
 import yfinance as yf
 from flask import Flask, jsonify, render_template, request
@@ -8,9 +9,17 @@ from tensorflow.keras.models import load_model
 
 app = Flask(__name__)
 
-# Load models
-lr_model = joblib.load("saved_models/linear_model.pkl")
-lstm_model = load_model("saved_models/lstm_model.h5", compile=False)
+# --- FIX: Get the absolute path to the directory where this script (app.py) is located ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Construct paths relative to backend/
+# This works even if your saved_models folder is inside backend/
+lr_path = os.path.join(BASE_DIR, "saved_models", "linear_model.pkl")
+lstm_path = os.path.join(BASE_DIR, "saved_models", "lstm_model.keras")  # Ensure this matches your uploaded file name
+
+# Load models with the correct paths
+lr_model = joblib.load(lr_path)
+lstm_model = load_model(lstm_path, compile=False)
 
 
 @app.route("/")

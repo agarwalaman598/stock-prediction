@@ -1,0 +1,21 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment (Very Important to ignore)
+venv/
+env/
+
+# Local Data
+data/
+*.csv
+
+# OS files
+.DS_Store
+Thumbs.db
