@@ -6,3 +6,5 @@ tensorflow
 matplotlib
 yfinance
 joblib
+requests
+

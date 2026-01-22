@@ -6,6 +6,7 @@ function formatPrice(value) {
 }
 
 let chart = null;
+let debounceTimer = null;
 
 function getPrediction() {
     const symbol = document.getElementById("symbol").value.trim();
@@ -15,7 +16,7 @@ function getPrediction() {
         return;
     }
 
-    fetch(`http://127.0.0.1:5000/predict/${symbol}`)
+    fetch(`/predict/${symbol}`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -33,16 +34,15 @@ function getPrediction() {
                 "CAD": "C$"
             };
 
-const currencySymbol = symbolMap[data.currency] || data.currency + " ";
+            const currencySymbol = symbolMap[data.currency] || data.currency + " ";
 
-document.getElementById("lr").innerText =
-    currencySymbol + " " + formatPrice(data.linear_prediction);
+            document.getElementById("lr").innerText =
+                currencySymbol + " " + formatPrice(data.linear_prediction);
 
-document.getElementById("lstm").innerText =
-    currencySymbol + " " + formatPrice(data.lstm_prediction);
+            document.getElementById("lstm").innerText =
+                currencySymbol + " " + formatPrice(data.lstm_prediction);
 
-
-            drawChart(data.history, data.dates, data.linear_prediction, data.symbol);
+            drawChart(data.history, data.dates, data.linear_prediction, data.symbol, currencySymbol);
         })
         .catch(err => {
             alert("Error fetching prediction");
@@ -50,7 +50,50 @@ document.getElementById("lstm").innerText =
         });
 }
 
-function drawChart(history, dates, prediction, symbol) {
+const input = document.getElementById("symbol");
+const resultsBox = document.getElementById("results");
+
+input.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+
+    debounceTimer = setTimeout(() => {
+        const q = input.value.trim();
+        if (q.length < 2) {
+            resultsBox.style.display = "none";
+            return;
+        }
+
+        fetch(`/search?q=${q}`)
+            .then(res => res.json())
+            .then(data => {
+                resultsBox.innerHTML = "";
+                if (!data.length) {
+                    resultsBox.style.display = "none";
+                    return;
+                }
+
+                resultsBox.style.display = "block";
+
+                data.forEach(item => {
+                    const div = document.createElement("div");
+                    div.className = "result-item";
+                    div.innerHTML = `
+                        <b>${item.symbol}</b><br>
+                        <small>${item.name || ""} (${item.exchange || ""})</small>
+                    `;
+
+                    div.onclick = () => {
+                        input.value = item.symbol;
+                        resultsBox.style.display = "none";
+                    };
+
+                    resultsBox.appendChild(div);
+                });
+            });
+    }, 300);
+});
+
+function drawChart(history, dates, prediction, symbol, currencySymbol) {
     const labels = [...dates, "Predicted"];
     const prices = [...history, prediction];
 
@@ -64,7 +107,6 @@ function drawChart(history, dates, prediction, symbol) {
         type: "line",
         data: {
             labels: labels,
-
             datasets: [{
                 label: symbol + " Closing Price Trend",
                 data: prices,
@@ -78,7 +120,6 @@ function drawChart(history, dates, prediction, symbol) {
                     i === prices.length - 1 ? "#ef4444" : "#4f46e5"
                 )
             }]
-
         },
         options: {
             responsive: true,
@@ -97,7 +138,7 @@ function drawChart(history, dates, prediction, symbol) {
                 y: {
                     title: {
                         display: true,
-                        text: "Price"
+                        text: "Price (" + currencySymbol + ")"
                     }
                 }
             }

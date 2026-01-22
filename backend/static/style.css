@@ -82,3 +82,43 @@ h1 {
 .chart-container {
     height: 350px;
 }
+
+.results-box {
+    position: absolute;
+    background: white;
+    width: 250px;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    z-index: 100;
+}
+
+.result-item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.result-item:hover {
+    background: #f3f4f6;
+}
+
+.controls {
+    position: relative;
+}
+
+.controls input:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+@media (max-width: 600px) {
+    .predictions {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+}

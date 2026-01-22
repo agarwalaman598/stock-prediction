@@ -2,6 +2,8 @@
 <html>
 <head>
     <title>Stock Prediction Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="/static/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -11,7 +13,12 @@
     <h1>📈 Stock Prediction Dashboard</h1>
 
     <div class="controls">
-        <input id="symbol" placeholder="Enter symbol (AAPL, TCS.NS, TSLA)">
+        <label for="symbol" style="display:none;">Stock Symbol</label>
+        <input id="symbol"
+               placeholder="Enter symbol (AAPL, TCS.NS, TSLA)"
+               onkeydown="if(event.key==='Enter') getPrediction()">
+
+        <div id="results" class="results-box"></div>
         <button onclick="getPrediction()">Predict</button>
     </div>
 

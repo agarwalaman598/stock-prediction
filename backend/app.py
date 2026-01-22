@@ -1,5 +1,6 @@
+import requests
 import yfinance as yf
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 import numpy as np
 import pandas as pd
 import joblib
@@ -9,12 +10,53 @@ app = Flask(__name__)
 
 # Load models
 lr_model = joblib.load("saved_models/linear_model.pkl")
-lstm_model = load_model("saved_models/lstm_model.keras", compile=False)
+lstm_model = load_model("saved_models/lstm_model.h5", compile=False)
 
 
 @app.route("/")
 def home():
     return render_template("index.html")
+
+
+@app.route("/search")
+def search_stock():
+    try:
+        query = request.args.get("q", "").strip()
+
+        if not query:
+            return jsonify([])
+
+        url = "https://query2.finance.yahoo.com/v1/finance/search"
+        params = {
+            "q": query,
+            "quotesCount": 6,
+            "newsCount": 0
+        }
+
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
+
+        r = requests.get(url, params=params, headers=headers, timeout=5)
+
+        if r.status_code != 200:
+            return jsonify([])
+
+        data = r.json()
+        
+
+        results = []
+        for item in data.get("quotes", []):
+            results.append({
+                "symbol": item.get("symbol"),
+                "name": item.get("longname") or item.get("shortname"),
+                "exchange": item.get("exchange")
+            })
+
+        return jsonify(results)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/predict/<symbol>")
@@ -34,8 +76,7 @@ def predict_symbol(symbol):
             return jsonify({"error": "Close price not found"}), 400
 
         # Convert Close to numeric Series safely
-        close_series = pd.to_numeric(data["Close"].squeeze(), errors="coerce")
-        close_series = close_series.dropna()
+        close_series = pd.to_numeric(data["Close"].squeeze(), errors="coerce").dropna()
 
         if len(close_series) < 60:
             return jsonify({"error": "Not enough valid price data"}), 400
@@ -65,11 +106,9 @@ def predict_symbol(symbol):
         lr_price = (lr_scaled * (max_price - min_price)) + min_price
         lstm_price = (lstm_scaled * (max_price - min_price)) + min_price
 
-        # Get stock currency (after validation)
+        # Get stock currency
         try:
-            ticker = yf.Ticker(symbol)
-            info = ticker.info
-            currency = info.get("currency", "USD")
+            currency = yf.Ticker(symbol).info.get("currency", "USD")
         except:
             currency = "USD"
 
