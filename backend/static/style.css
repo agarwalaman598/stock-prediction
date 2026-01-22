@@ -134,3 +134,26 @@ button:hover { background-color: #0056b3; }
         height: 300px; 
     }
 }
+
+/* --- NEW: Loading Spinner Animation --- */
+#loading {
+    margin: 20px 0;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3; /* Light grey background */
+    border-top: 4px solid #007bff; /* Blue spinner */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px auto; /* Centers the spinner */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
