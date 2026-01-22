@@ -123,6 +123,7 @@ function drawChart(history, dates, prediction, symbol, currencySymbol) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: true

@@ -116,9 +116,24 @@ h1 {
 }
 
 @media (max-width: 600px) {
+    /* Stack the prediction boxes vertically */
     .predictions {
         flex-direction: column;
         gap: 10px;
         align-items: center;
+    }
+
+    /* Make the card wider on mobile to use full screen space */
+    .dashboard-card {
+        width: 95%;
+        padding: 15px;
+        margin: 10px auto;
+    }
+
+    /* Ensure chart container has a fixed height so the chart stays tall */
+    .chart-container {
+        position: relative;
+        height: 300px; /* Readable height for mobile */
+        width: 100%;
     }
 }
