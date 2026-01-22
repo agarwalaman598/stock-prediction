@@ -1,146 +1,144 @@
-function formatPrice(value) {
-    return Number(value).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-}
+let chartInstance = null;
 
-let chart = null;
-let debounceTimer = null;
+// Handle suggestions as user types
+const tickerInput = document.getElementById("tickerInput");
+const suggestionsBox = document.getElementById("suggestions");
 
-function getPrediction() {
-    const symbol = document.getElementById("symbol").value.trim();
-
-    if (!symbol) {
-        alert("Enter a stock symbol");
+tickerInput.addEventListener("input", async function() {
+    const query = this.value.trim();
+    if (query.length < 2) {
+        suggestionsBox.style.display = "none";
         return;
     }
 
-    fetch(`/predict/${symbol}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-                return;
-            }
+    try {
+        const res = await fetch(`/search?q=${query}`);
+        const data = await res.json();
 
-            const symbolMap = {
-                "USD": "$",
-                "INR": "₹",
-                "GBP": "£",
-                "EUR": "€",
-                "JPY": "¥",
-                "AUD": "A$",
-                "CAD": "C$"
-            };
-
-            const currencySymbol = symbolMap[data.currency] || data.currency + " ";
-
-            document.getElementById("lr").innerText =
-                currencySymbol + " " + formatPrice(data.linear_prediction);
-
-            document.getElementById("lstm").innerText =
-                currencySymbol + " " + formatPrice(data.lstm_prediction);
-
-            drawChart(data.history, data.dates, data.linear_prediction, data.symbol, currencySymbol);
-        })
-        .catch(err => {
-            alert("Error fetching prediction");
-            console.log(err);
-        });
-}
-
-const input = document.getElementById("symbol");
-const resultsBox = document.getElementById("results");
-
-input.addEventListener("input", () => {
-    clearTimeout(debounceTimer);
-
-    debounceTimer = setTimeout(() => {
-        const q = input.value.trim();
-        if (q.length < 2) {
-            resultsBox.style.display = "none";
-            return;
-        }
-
-        fetch(`/search?q=${q}`)
-            .then(res => res.json())
-            .then(data => {
-                resultsBox.innerHTML = "";
-                if (!data.length) {
-                    resultsBox.style.display = "none";
-                    return;
-                }
-
-                resultsBox.style.display = "block";
-
-                data.forEach(item => {
-                    const div = document.createElement("div");
-                    div.className = "result-item";
-                    div.innerHTML = `
-                        <b>${item.symbol}</b><br>
-                        <small>${item.name || ""} (${item.exchange || ""})</small>
-                    `;
-
-                    div.onclick = () => {
-                        input.value = item.symbol;
-                        resultsBox.style.display = "none";
-                    };
-
-                    resultsBox.appendChild(div);
-                });
+        suggestionsBox.innerHTML = "";
+        if (data.length > 0) {
+            suggestionsBox.style.display = "block";
+            data.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "suggestion-item";
+                div.innerText = `${item.symbol} - ${item.name}`;
+                div.onclick = () => {
+                    tickerInput.value = item.symbol;
+                    suggestionsBox.style.display = "none";
+                    getPrediction();
+                };
+                suggestionsBox.appendChild(div);
             });
-    }, 300);
+        } else {
+            suggestionsBox.style.display = "none";
+        }
+    } catch (err) {
+        console.error("Search error:", err);
+    }
 });
 
-function drawChart(history, dates, prediction, symbol, currencySymbol) {
-    const labels = [...dates, "Predicted"];
-    const prices = [...history, prediction];
+// Hide suggestions if clicking outside
+document.addEventListener("click", function(e) {
+    if (!tickerInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+        suggestionsBox.style.display = "none";
+    }
+});
 
-    const ctx = document.getElementById("priceChart").getContext("2d");
+async function getPrediction() {
+    const symbol = tickerInput.value.toUpperCase();
+    if (!symbol) return;
 
-    if (chart) {
-        chart.destroy();
+    document.getElementById("loading").classList.remove("hidden");
+    document.getElementById("result").classList.add("hidden");
+    document.getElementById("error").classList.add("hidden");
+
+    try {
+        const response = await fetch(`/predict/${symbol}`);
+        const data = await response.json();
+
+        if (data.error) {
+            document.getElementById("error").innerText = data.error;
+            document.getElementById("error").classList.remove("hidden");
+        } else {
+            // Update Text
+            document.getElementById("stockTitle").innerText = `${data.symbol} Prediction`;
+            document.getElementById("lrValue").innerText = `${data.currency} ${data.linear_prediction}`;
+            document.getElementById("lstmValue").innerText = `${data.currency} ${data.lstm_prediction}`;
+            
+            // Render Chart
+            renderChart(data.dates, data.history, data.linear_prediction, data.lstm_prediction);
+            
+            document.getElementById("result").classList.remove("hidden");
+        }
+    } catch (err) {
+        document.getElementById("error").innerText = "Failed to fetch prediction.";
+        document.getElementById("error").classList.remove("hidden");
+    } finally {
+        document.getElementById("loading").classList.add("hidden");
+    }
+}
+
+function renderChart(dates, history, lrPred, lstmPred) {
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    
+    if (chartInstance) {
+        chartInstance.destroy();
     }
 
-    chart = new Chart(ctx, {
-        type: "line",
+    // Add future date for prediction
+    const futureDate = "Tomorrow";
+    const extendedLabels = [...dates, futureDate];
+
+    // Create dataset with nulls for history so prediction stands out
+    const historyData = [...history, null];
+    
+    // Prediction points (connect last history point to prediction)
+    const lastPrice = history[history.length - 1];
+    const lrData = new Array(history.length).fill(null);
+    lrData[history.length - 1] = lastPrice;
+    lrData.push(lrPred);
+
+    const lstmData = new Array(history.length).fill(null);
+    lstmData[history.length - 1] = lastPrice;
+    lstmData.push(lstmPred);
+
+    chartInstance = new Chart(ctx, {
+        type: 'line',
         data: {
-            labels: labels,
-            datasets: [{
-                label: symbol + " Closing Price Trend",
-                data: prices,
-                borderWidth: 2,
-                fill: false,
-                tension: 0.3,
-                pointRadius: prices.map((_, i) =>
-                    i === prices.length - 1 ? 6 : 3
-                ),
-                pointBackgroundColor: prices.map((_, i) =>
-                    i === prices.length - 1 ? "#ef4444" : "#4f46e5"
-                )
-            }]
+            labels: extendedLabels,
+            datasets: [
+                {
+                    label: 'History',
+                    data: historyData,
+                    borderColor: '#6c757d',
+                    tension: 0.1
+                },
+                {
+                    label: 'Linear Regression',
+                    data: lrData,
+                    borderColor: '#007bff',
+                    borderDash: [5, 5],
+                    pointRadius: 5
+                },
+                {
+                    label: 'LSTM',
+                    data: lstmData,
+                    borderColor: '#28a745',
+                    borderDash: [5, 5],
+                    pointRadius: 5
+                }
+            ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
+            maintainAspectRatio: false, // <--- Key fix for mobile
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
             plugins: {
                 legend: {
-                    display: true
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: "Date"
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: "Price (" + currencySymbol + ")"
-                    }
+                    position: 'bottom'
                 }
             }
         }

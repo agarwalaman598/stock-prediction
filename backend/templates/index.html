@@ -1,43 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Stock Prediction Dashboard</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Stock Price Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<div class="dashboard-card">
-    <h1>📈 Stock Prediction Dashboard</h1>
-
-    <div class="controls">
-        <label for="symbol" style="display:none;">Stock Symbol</label>
-        <input id="symbol"
-               placeholder="Enter symbol (AAPL, TCS.NS, TSLA)"
-               onkeydown="if(event.key==='Enter') getPrediction()">
-
-        <div id="results" class="results-box"></div>
-        <button onclick="getPrediction()">Predict</button>
-    </div>
-
-    <div class="predictions">
-        <div class="prediction-box">
-            <span class="label">Linear Regression</span>
-            <span id="lr" class="value">—</span>
+    <div class="dashboard-card">
+        <h1>Stock Price Predictor</h1>
+        
+        <div class="search-box">
+            <input type="text" id="tickerInput" placeholder="Enter Stock Symbol (e.g. AAPL, RELIANCE.NS)" autocomplete="off">
+            <button onclick="getPrediction()">Predict</button>
+            <div id="suggestions" class="suggestions-box"></div>
         </div>
-        <div class="prediction-box">
-            <span class="label">LSTM</span>
-            <span id="lstm" class="value">—</span>
+
+        <div id="loading" class="hidden">Thinking...</div>
+        <div id="error" class="hidden"></div>
+
+        <div id="result" class="hidden">
+            <h2 id="stockTitle"></h2>
+            
+            <div class="predictions">
+                <div class="pred-box lr">
+                    <span class="label">Linear Regression</span>
+                    <span class="value" id="lrValue">--</span>
+                </div>
+                <div class="pred-box lstm">
+                    <span class="label">LSTM (Deep Learning)</span>
+                    <span class="value" id="lstmValue">--</span>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="priceChart"></canvas>
+            </div>
+            
+            <div class="footer">
+                <p>Created by <b>Aman Agarwal</b></p>
+                <p class="disclaimer">
+                    ⚠️ Disclaimer: This project is for educational purposes only. <br>
+                    Predictions are uncertain and do not constitute financial advice.
+                </p>
+            </div>
         </div>
     </div>
 
-    <div class="chart-container">
-        <canvas id="priceChart"></canvas>
-    </div>
-</div>
-
-<script src="/static/script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
