@@ -23,25 +23,26 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions Bot"
           
-          # 1. Create a fresh, empty branch for deployment
-          git checkout --orphan deploy_branch
+          # 1. Create a fresh orphan branch (Ghost Branch)
+          git checkout --orphan deploy_v2
           
           # 2. DELETE assets (screenshots) to avoid large file errors
           rm -rf assets
           git rm -rf assets --ignore-unmatch
 
-          # --- MAGIC TRICK STARTS HERE ---
-          # 3. Inject the Hugging Face Configuration into README.md
-          # This adds the YAML block to the top of the file dynamically
+          # 3. INJECT CONFIGURATION (The Magic Trick)
+          # This adds the required YAML block to the top of README.md
           sed -i '1s/^/---\ntitle: Stock Prediction Live\nemoji: 📈\ncolorFrom: blue\ncolorTo: green\nsdk: docker\napp_port: 7860\npinned: false\n---\n\n/' README.md
-          
-          # Add the modified README to git
-          git add README.md
-          # --- MAGIC TRICK ENDS HERE ---
           
           # 4. Commit the clean code
           git add .
           git commit -m "Deploy to Hugging Face (Clean Build + Config)"
           
-          # 5. Push to Hugging Face
-          git push --force https://agarwalaman:$HF_TOKEN@huggingface.co/spaces/agarwalaman/stock-prediction-live deploy_branch:main
+          # 5. RENAME branch to 'main'
+          # This fixes the "incorrect old value" error by aligning branch names
+          git branch -D main || true
+          git checkout -b main
+          
+          # 6. Push to Hugging Face
+          # Now we are pushing main -> main, which works reliably
+          git push --force https://agarwalaman:$HF_TOKEN@huggingface.co/spaces/agarwalaman/stock-prediction-live main
